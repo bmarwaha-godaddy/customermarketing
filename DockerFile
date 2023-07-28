@@ -1,0 +1,23 @@
+# syntax=docker/dockerfile:1
+
+# Build the application from source
+FROM golang:1.20.2 AS build-stage
+
+WORKDIR /usr/src/app
+
+
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+COPY . .
+
+ENV AWS_ACCESS_KEY_ID="ASIAVPQISR2PLCSQM7F4"
+ENV AWS_SECRET_ACCESS_KEY="E13z2dOo6iHJ4M5SRN0+mZQ6YcehZgR11T56xOFY"
+ENV AWS_SESSION_TOKEN="FwoGZXIvYXdzEO3//////////wEaDB8lgBEtdt5CO00VBCLsATj8CT2+tenxG4R3IpVXGWO7G/J+m+/BYADTsDFAIx9zlUkbHLF6TmjsBZMn6AfUisjuezPzAor8PnKihFF2xeeaYuGSYRzleulATfZrnkdOY4xNNNxXY7oJ+4EJGlhsxV/43f48iBrPHJvOOMoWPLFDR748rNxfSImCwgDkQVGzqZdfbP8nn7cA0BFbOTu7QR0zqCwprgAxuEGadG2Ob+Ake+oSegJ5h9hcd6t4AGwgglQhZtDNdv8+wf93WVmHSnS5lzx1al8dY96eobszVjBxUroI40I4Rn7SU3NzQvwhxc4XCI0kRq5S3g6cKLXWjqYGMitjCkCmleAGxehg/qWkHCyMJOiytrEnB6YS8z5ssGpOk8bUQffeK/iMsaw+"
+
+RUN go build -v -o /usr/local/bin/app ./...
+
+CMD ["app"]
+#RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-gs-ping
+
+# Run the tests in the container
