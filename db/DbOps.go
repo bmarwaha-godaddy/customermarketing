@@ -1,6 +1,7 @@
 package db
 
 import (
+	"CustomerMarketingPlatform/initializer"
 	"CustomerMarketingPlatform/model"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -10,7 +11,7 @@ import (
 	"log"
 )
 
-func StoreData(basics DynamoDbClient, channel model.Channel) error {
+func StoreData(basics initializer.DynamoDbClient, channel model.Channel) error {
 
 	item, err := attributevalue.MarshalMap(channel)
 
@@ -28,7 +29,7 @@ func StoreData(basics DynamoDbClient, channel model.Channel) error {
 	return err
 }
 
-func ReadDataById(basics DynamoDbClient, identifier string, loggedInCity string) (error, model.Channel) {
+func ReadDataById(basics initializer.DynamoDbClient, identifier string, loggedInCity string) (error, model.Channel) {
 	var channel model.Channel
 	id, err := attributevalue.Marshal(identifier)
 	loggedCityMarshal, err := attributevalue.Marshal(loggedInCity)
@@ -49,4 +50,22 @@ func ReadDataById(basics DynamoDbClient, identifier string, loggedInCity string)
 	}
 
 	return err, channel
+}
+func DeleteChannelById(basics initializer.DynamoDbClient, identifier string, loggedInCity string) error {
+	id, err := attributevalue.Marshal(identifier)
+	loggedCityMarshal, err := attributevalue.Marshal(loggedInCity)
+
+	response, err := basics.Client.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+		Key:       map[string]types.AttributeValue{"identifier": id, "loggedInFrom": loggedCityMarshal},
+		TableName: aws.String(basics.TableName),
+	})
+
+	log.Printf("DeleteResponse  is %v", response)
+
+	if err != nil {
+		log.Printf("Couldn't get item from table. Here's why: %v\n", err)
+		return err
+	}
+
+	return err
 }

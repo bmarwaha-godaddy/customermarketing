@@ -2,6 +2,7 @@ package main
 
 import (
 	"CustomerMarketingPlatform/db"
+	"CustomerMarketingPlatform/initializer"
 	"CustomerMarketingPlatform/model"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -17,18 +18,19 @@ func main() {
 	r := gin.Default()
 	r.POST("/channel", addChannelAccess)
 	r.GET("/channel/", getChannelById)
+	r.DELETE("/channel/", deleteChannelById)
 
 	r.Run()
 
 }
 func getChannelById(c *gin.Context) {
 
-	cfg, error := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"))
+	cfg, error := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-2"))
 
 	if error != nil {
 		log.Fatalf("error acessing client %v", error)
 	}
-	dynamoClient := db.DynamoDbClient{
+	dynamoClient := initializer.DynamoDbClient{
 		Client:    dynamodb.NewFromConfig(cfg),
 		TableName: "channeldata",
 	}
@@ -42,6 +44,27 @@ func getChannelById(c *gin.Context) {
 	c.JSONP(http.StatusOK, channel)
 
 }
+func deleteChannelById(c *gin.Context) {
+
+	cfg, error := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-2"))
+
+	if error != nil {
+		log.Fatalf("error acessing client %v", error)
+	}
+	dynamoClient := initializer.DynamoDbClient{
+		Client:    dynamodb.NewFromConfig(cfg),
+		TableName: "channeldata",
+	}
+
+	error = db.DeleteChannelById(dynamoClient, c.Query("identifier"), c.Query("loggedInCity"))
+	if error != nil {
+		fmt.Printf("Error deleting records")
+		c.JSONP(http.StatusInternalServerError, error)
+		return
+	}
+	c.JSONP(http.StatusOK, "Deleted successfully")
+
+}
 func addChannelAccess(c *gin.Context) {
 
 	var customerChannelData model.CustomerChannel
@@ -52,12 +75,12 @@ func addChannelAccess(c *gin.Context) {
 		log.Fatal("Could not bind json")
 	}
 
-	cfg, error := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"))
+	cfg, error := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-2"))
 
 	if error != nil {
 		log.Fatalf("error acessing client %v", error)
 	}
-	dynamoClient := db.DynamoDbClient{
+	dynamoClient := initializer.DynamoDbClient{
 		Client:    dynamodb.NewFromConfig(cfg),
 		TableName: "channeldata",
 	}

@@ -1,23 +1,19 @@
-# syntax=docker/dockerfile:1
+FROM golang:alpine AS builder
 
-# Build the application from source
-FROM golang:1.20.2 AS build-stage
-
-WORKDIR /usr/src/app
-
-
-COPY go.mod go.sum ./
-RUN go mod download && go mod verify
-
+RUN apk add --no-cache git
+WORKDIR /go/src/app
 COPY . .
 
-ENV AWS_ACCESS_KEY_ID="ASIAVPQISR2PLCSQM7F4"
-ENV AWS_SECRET_ACCESS_KEY="E13z2dOo6iHJ4M5SRN0+mZQ6YcehZgR11T56xOFY"
-ENV AWS_SESSION_TOKEN="FwoGZXIvYXdzEO3//////////wEaDB8lgBEtdt5CO00VBCLsATj8CT2+tenxG4R3IpVXGWO7G/J+m+/BYADTsDFAIx9zlUkbHLF6TmjsBZMn6AfUisjuezPzAor8PnKihFF2xeeaYuGSYRzleulATfZrnkdOY4xNNNxXY7oJ+4EJGlhsxV/43f48iBrPHJvOOMoWPLFDR748rNxfSImCwgDkQVGzqZdfbP8nn7cA0BFbOTu7QR0zqCwprgAxuEGadG2Ob+Ake+oSegJ5h9hcd6t4AGwgglQhZtDNdv8+wf93WVmHSnS5lzx1al8dY96eobszVjBxUroI40I4Rn7SU3NzQvwhxc4XCI0kRq5S3g6cKLXWjqYGMitjCkCmleAGxehg/qWkHCyMJOiytrEnB6YS8z5ssGpOk8bUQffeK/iMsaw+"
+RUN go get -d -v ./...
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /go/bin/app -v .
 
-RUN go build -v -o /usr/local/bin/app ./...
+#final stage
+FROM alpine:latest
 
-CMD ["app"]
-#RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-gs-ping
+RUN addgroup -S app && adduser -S app -G app
+COPY --from=builder --chown=app /go/bin/app /app
+USER app
+ENV AWS_ACCESS_KEY_ID = xxxxx
+ENV AWS_SECRET_ACCESS_KEY=xxxx
 
-# Run the tests in the container
+ENTRYPOINT ["/app"] 
