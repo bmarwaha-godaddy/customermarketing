@@ -20,25 +20,28 @@ func main() {
 	r.GET("/channel/", getChannelById)
 	r.DELETE("/channel/", deleteChannelById)
 
-	r.Run()
+	err := r.Run()
+	if err != nil {
+		return
+	}
 
 }
 func getChannelById(c *gin.Context) {
 
-	cfg, error := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-2"))
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-2"))
 
-	if error != nil {
-		log.Fatalf("error acessing client %v", error)
+	if err != nil {
+		log.Fatalf("err acessing client %v", err)
 	}
 	dynamoClient := initializer.DynamoDbClient{
 		Client:    dynamodb.NewFromConfig(cfg),
 		TableName: "channeldata",
 	}
 
-	error, channel := db.ReadDataById(dynamoClient, c.Query("identifier"), c.Query("loggedInCity"))
-	if error != nil {
-		fmt.Printf("Error searching records")
-		c.JSONP(http.StatusInternalServerError, error)
+	err, channel := db.ReadDataById(dynamoClient, c.Query("identifier"), c.Query("loggedInCity"))
+	if err != nil {
+		fmt.Printf("could not find records")
+		c.JSONP(http.StatusNotFound, err)
 		return
 	}
 	c.JSONP(http.StatusOK, channel)

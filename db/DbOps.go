@@ -4,6 +4,7 @@ import (
 	"CustomerMarketingPlatform/initializer"
 	"CustomerMarketingPlatform/model"
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -38,6 +39,11 @@ func ReadDataById(basics initializer.DynamoDbClient, identifier string, loggedIn
 		TableName: aws.String(basics.TableName),
 		Key:       map[string]types.AttributeValue{"identifier": id, "loggedInFrom": loggedCityMarshal},
 	})
+	//err := fmt.Errorf("user %q (id %d) not found", loggedInCity, id)
+	if len(response.Item) == 0 {
+		return fmt.Errorf(" %q identifier  not found,", identifier), channel
+
+	}
 
 	if err != nil {
 		log.Printf("Couldn't get item from table. Here's why: %v\n", err)

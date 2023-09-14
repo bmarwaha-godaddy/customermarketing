@@ -1,11 +1,12 @@
-1. PASS env variable in docker file aws credentials.
-2. Run docker build process from root of project.
-3. or run the docker file using Docker plugin or run the command.
-4.  docker build .
-5.  Step 3 would produce 2 images and would start a container.
-6.  hit the url
-7. :post to below url 
-8. localhost:8080/channel
+1 Run docker build .
+e.g docker built . -t market:dev
+2.Once docker image is built initiate the container using below command
+
+docker run --env-file env-var.txt --publish 4000:8080 market:dev env
+Make sure to set AWS credentials in env-var.txt file.
+
+POST
+http://localhost:4000/channel
 ```json lines
    {
    "name" :"Google",
@@ -15,3 +16,9 @@
 
 }
 ```
+
+2. GET URL.
+http://localhost:4000/channel/?identifier=abc&loggedInCity=LDH
+
+3. Delete URL
+http://localhost:4000/channel/?identifier=12121&loggedInCity=Amritsar

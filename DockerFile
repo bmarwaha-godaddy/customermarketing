@@ -13,7 +13,7 @@ FROM alpine:latest
 RUN addgroup -S app && adduser -S app -G app
 COPY --from=builder --chown=app /go/bin/app /app
 USER app
-ENV AWS_ACCESS_KEY_ID = xxxxx
-ENV AWS_SECRET_ACCESS_KEY=xxxx
+#ENV AWS_ACCESS_KEY_ID = xxx
+#ENV AWS_SECRET_ACCESS_KEY = xxxxx
 
 ENTRYPOINT ["/app"] 
